@@ -1,7 +1,252 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моя стартовая страница</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: #ffe6f2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 8vh;
+        }
+
+        .main-content {
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+            margin: 0 auto;
+        }
+
+        .time {
+            font-size: 4em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .date {
+            font-size: 1.5em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .currency {
+            font-size: 1.8em;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+        }
+
+        .news {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .news a {
+            color: #333;
+            text-decoration: none;
+            font-size: 1.1em;
+        }
+
+        .news a:hover {
+            text-decoration: underline;
+        }
+
+        .links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .link-item {
+            color: #333;
+            text-decoration: none;
+            transition: transform 0.2s;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .link-item:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .link-item i {
+            font-size: 2.5em;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .error {
+            color: #ff4444;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .time {
+                font-size: 3em;
+            }
+            .date {
+                font-size: 1.2em;
+            }
+            .currency {
+                font-size: 1.4em;
+            }
+            .search-container {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
 <body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
+    <div class="main-content">
+        <div class="time" id="time"></div>
+        <div class="date" id="date"></div>
+        <div class="currency">USD: <span id="usd-rate">...</span> ₽</div>
+        
+        <!-- Поисковая строка -->
+        <div class="search-container">
+            <form action="https://www.google.com/search" method="GET" target="_blank">
+                <input 
+                    type="text" 
+                    class="search-input"
+                    name="q"
+                    placeholder="Поиск в Google..."
+                    autocomplete="off"
+                >
+                <button type="submit" class="search-button">
+                    <i class="fas fa-search fa-lg"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Новости -->
+        <div class="news">
+            <div id="news-title">Загрузка новости...</div>
+            <div id="news-source"></div>
+            <div class="error" id="news-error"></div>
+        </div>
+
+        <!-- Ссылки -->
+        <div class="links">
+            <a href="https://youtube.com" target="_blank" class="link-item">
+                <i class="fab fa-youtube"></i>
+                YouTube
+            </a>
+            <a href="https://twitch.tv" target="_blank" class="link-item">
+                <i class="fab fa-twitch"></i>
+                Twitch
+            </a>
+            <a href="https://www.deepseek.com" target="_blank" class="link-item">
+                <i class="fas fa-robot"></i>
+                DeepSeek
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Обновление времени и даты
+        function updateDateTime() {
+            const now = new Date();
+            const timeElement = document.getElementById('time');
+            const dateElement = document.getElementById('date');
+            
+            timeElement.textContent = now.toLocaleTimeString('ru-RU');
+            dateElement.textContent = now.toLocaleDateString('ru-RU', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // Получение курса доллара
+        async function getUSDExchangeRate() {
+            try {
+                const response = await fetch('https://www.cbr-xml-daily.ru/daily_json.js');
+                const data = await response.json();
+                const rate = data.Valute.USD.Value.toFixed(2);
+                document.getElementById('usd-rate').textContent = rate;
+            } catch (error) {
+                console.error('Ошибка при получении курса валют:', error);
+            }
+        }
+
+        // Получение главной новости
+        async function getMainNews() {
+            const API_KEY = 'ВАШ_API_КЛЮЧ'; // Замените на свой ключ
+            try {
+                const response = await fetch(
+                    `https://newsapi.org/v2/top-headlines?country=ru&pageSize=1&apiKey=${API_KEY}`
+                );
+                const data = await response.json();
+                if (data.articles && data.articles.length > 0) {
+                    document.getElementById('news-title').innerHTML = 
+                        `<a href="${data.articles[0].url}" target="_blank">${data.articles[0].title}</a>`;
+                    document.getElementById('news-source').textContent = 
+                        `Источник: ${data.articles[0].source.name}`;
+                }
+            } catch (error) {
+                document.getElementById('news-error').textContent = 
+                    'Не удалось загрузить новости';
+                console.error('Ошибка при получении новостей:', error);
+            }
+        }
+
+        // Инициализация
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+        getUSDExchangeRate();
+        getMainNews();
+    </script>
 </body>
 </html>
